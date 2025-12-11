@@ -105,7 +105,7 @@ class NLToSQLAgent:
 
     def generate_sql(self, natural_query: str) -> str:
         """
-                Generate SQL from natural language query using Claude
+        Generate SQL from natural language query using Claude
         
         Args:
             natural_query: User's natural language question

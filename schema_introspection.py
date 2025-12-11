@@ -126,16 +126,16 @@ class SchemaIntrospection:
         schema_parts.append("\n" + "=" * 80)
         schema_parts.append("RELATIONSHIP SUMMARY")
         schema_parts.append("=" * 80)
-#         schema_parts.append("""
-# Key Relationships:
-# - customers → orders (one customer can have many orders)
-# - customers → shipping_addresses (one customer can have many addresses)
-# - customers → payment_methods (one customer can have many payment methods)
-# - orders → order_items (one order can have many items)
-# - orders → payment_transactions (one order can have many transactions)
-# - shipping_addresses → orders (one address can be used for many orders)
-# - payment_methods → orders (one payment method can be used for many orders)
-# """)
+        schema_parts.append("""
+Key Relationships:
+- customers → orders (one customer can have many orders)
+- customers → shipping_addresses (one customer can have many addresses)
+- customers → payment_methods (one customer can have many payment methods)
+- orders → order_items (one order can have many items)
+- orders → payment_transactions (one order can have many transactions)
+- shipping_addresses → orders (one address can be used for many orders)
+- payment_methods → orders (one payment method can be used for many orders)
+""")
         
         return "\n".join(schema_parts)
 
