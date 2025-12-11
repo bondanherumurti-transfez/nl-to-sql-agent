@@ -44,6 +44,31 @@ Sample Data (1 row):
   Sample: (1, 1, '123 Main St', None, 'New York', 'NY', '10001', 'USA', True, datetime.datetime(2025, 12, 3, 18, 25, 42, 295330), datetime.datetime(2025, 12, 3, 18, 25, 42, 295330))
 ```
 
-Key Relationships is currenltly hardcoded, it defines the relationships between tables, this is needed to generate JOINs in the SQL query.
+Key Relationships is currently hardcoded, it defines the relationships between tables, this is needed to generate JOINs in the SQL query.
 
 Few Shots Examples is currently hardcoded, it defines the examples of SQL queries that will be used to generate JOINs in the SQL query.
+
+Sample of Few Shots:
+Example 1 - Simple Count:
+Question: "How many customers do we have?"
+SQL: 
+```sql 
+SELECT COUNT(*) as total_customers FROM customers;
+```
+
+LLM used is Claude 4.5 Sonnet through Anthropic API.
+
+Error handling is implemented at through retry_with_error(), which will retry the SQL generation up to 3 times if it fails.
+
+Database connection is mainly implemented through psycopg2, it is a PostgreSQL database connection library. Clickhouse is experimental and not yet implemented.
+
+Sample of key relationships:
+- customers → orders (one customer can have many orders)
+- customers → shipping_addresses (one customer can have many addresses)
+- customers → payment_methods (one customer can have many payment methods)
+- orders → order_items (one order can have many items)
+- orders → payment_transactions (one order can have many transactions)
+- shipping_addresses → orders (one address can be used for many orders)
+- payment_methods → orders (one payment method can be used for many orders)
+
+
