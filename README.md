@@ -1,74 +1,88 @@
-This is a Natural language to SQL Language, it helps non technical people to query business analytics
+# NL-to-SQL Agent
 
-- Entry point is agent.py
-- The query is coming from Interactive shell from interactiveMode() function, from there it will call query() function. Query function will call generate_sql() function to generate SQL from natural language query, then it will call execute_sql() function to execute the SQL query.
+A robust Natural Language to SQL agent that empowers non-technical users to query business analytics data using plain English. Built with Python, PostgreSQL, and Anthropic's Claude 3.5 Sonnet.
 
-Role of files
-- agent.py: Entry point of application, mostly control interactive shell
-- clickhouse_schema.py: Schema introspection for a clickhouse database for transfez specific use cases, its an experimental file to test schema instrospection with more than 100 tables
-- prompts.py: a prompts builder it combined between schema instrospection, key relationships, few shots examples, and user query to generate a prompt for Claude
-- schema_introspection.py: an schema introspection class that will be used to get schema context from database, this the one that used to generate schema context for prompts
-- sql_validator.py: a sql validator class that will ensures only safe SELECT queries are executed
+## 📋 Overview
 
-Structure of prompts: 
-* System Prompt
-* Schema Context
-* Key Relationships
-* Few Shots Examples
-* User Query
-Details:
-Schema context is always include all table and columns, as well as sample data from each table, and foreign key relationships, there is no table filter since this is a very limited tables involved.
+This agent acts as an intelligent bridge between human questions and your database. It handles the complex logic of:
+1.  Introspecting your database schema.
+2.  Understanding natural language questions.
+3.  Generating valid, safe SQL queries using an LLM.
+4.  Executing queries and formatting results.
+5.  Auto-recovering from SQL errors.
 
-Sample schema context:
-```sql
-TABLE: shipping_addresses
---------------------------------------------------------------------------------
-Columns:
-  - address_id (integer, NOT NULL, DEFAULT: NO)
-  - customer_id (integer, NOT NULL, DEFAULT: NO)
-  - address_line1 (character varying, NOT NULL, DEFAULT: NO)
-  - address_line2 (character varying, NOT NULL, DEFAULT: YES)
-  - city (character varying, NOT NULL, DEFAULT: NO)
-  - state (character varying, NOT NULL, DEFAULT: YES)
-  - postal_code (character varying, NOT NULL, DEFAULT: NO)
-  - country (character varying, NOT NULL, DEFAULT: NO)
-  - is_default (boolean, NOT NULL, DEFAULT: YES)
-  - created_at (timestamp without time zone, NOT NULL, DEFAULT: YES)
-  - updated_at (timestamp without time zone, NOT NULL, DEFAULT: YES)
+## 🏗️ Architecture
 
-Foreign Keys:
-  - customer_id → customers.customer_id
+The application follows a linear pipeline architecture:
 
-Sample Data (1 row):
-  Columns: address_id, customer_id, address_line1, address_line2, city, state, postal_code, country, is_default, created_at, updated_at
-  Sample: (1, 1, '123 Main St', None, 'New York', 'NY', '10001', 'USA', True, datetime.datetime(2025, 12, 3, 18, 25, 42, 295330), datetime.datetime(2025, 12, 3, 18, 25, 42, 295330))
+```mermaid
+graph TD
+    User([User Input]) --> Agent[NLToSQLAgent]
+    Agent --> Schema[Schema Introspection]
+    Schema -->|Schema Context| Prompt[Prompt Builder]
+    Prompt -->|Context + Query| LLM[Claude 3.5 Sonnet]
+    LLM -->|Raw SQL| Validator[SQL Validator]
+    Validator -->|Safe Clean SQL| Exec[Database Execution]
+    Exec -->|Results| Formatter[Result Formatter]
+    Formatter --> User
 ```
 
-Key Relationships is currently hardcoded, it defines the relationships between tables, this is needed to generate JOINs in the SQL query.
+### Key Components
 
-Few Shots Examples is currently hardcoded, it defines the examples of SQL queries that will be used to generate JOINs in the SQL query.
+*   **`agent.py`**: The core controller. Manages the interactive loop, handles retries, and coordinates the flow between components.
+*   **`schema_introspection.py`**: Connects to PostgreSQL to extract table metadata, column types, and foreign key relationships. Defines the "schema context" sent to the LLM.
+*   **`prompts.py`**: Constructs the prompt engineering layer, injecting schema context, system instructions, and few-shot examples.
+*   **`sql_validator.py`**: A security layer that ensures only `SELECT` statements are executed and attempts to prevent common SQL injection patterns.
 
-Sample of Few Shots:
-Example 1 - Simple Count:
-Question: "How many customers do we have?"
-SQL: 
-```sql 
-SELECT COUNT(*) as total_customers FROM customers;
+### Experimental Files
+*   `clickhouse_schema_introspection.py`: Experimental support for Clickhouse (currently not active in main flow).
+
+## 🚀 Getting Started
+
+### Prerequisites
+*   Python 3.8+
+*   PostgreSQL Database
+*   Anthropic API Key
+
+### Installation
+
+1.  **Clone the repository**
+2.  **Install dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+### Configuration
+
+Create a `.env` file in the root directory with the following variables:
+
+| Variable | Description | Required | Default |
+|----------|-------------|:--------:|:-------:|
+| `ANTHROPIC_API_KEY` | Your Anthropic API Key | Yes | - |
+| `DB_HOST` | PostgreSQL Hostname | Yes | - |
+| `DB_PORT` | PostgreSQL Port | Yes | - |
+| `DB_NAME` | Database Name | Yes | - |
+| `DB_USER` | Database Username | Yes | - |
+| `DB_PASSWORD` | Database Password | Yes | - |
+| `MAX_RETRIES` | Max attempts to fix failed SQL | No | 3 |
+| `QUERY_TIMEOUT` | Query timeout in seconds | No | 30 |
+
+## 💻 Usage
+
+To start the interactive agent shell:
+
+```bash
+python agent.py
 ```
 
-LLM used is Claude 4.5 Sonnet through Anthropic API.
+### Commands
+*   Type your question in plain English (e.g., "How many customers are in New York?")
+*   `schema`: View the currently loaded schema context.
+*   `exit`, `quit`, `q`: Exit the program.
 
-Error handling is implemented at through retry_with_error(), which will retry the SQL generation up to 3 times if it fails.
+## ⚠️ Limitations & Known Issues
 
-Database connection is mainly implemented through psycopg2, it is a PostgreSQL database connection library. Clickhouse is experimental and not yet implemented.
-
-Sample of key relationships:
-- customers → orders (one customer can have many orders)
-- customers → shipping_addresses (one customer can have many addresses)
-- customers → payment_methods (one customer can have many payment methods)
-- orders → order_items (one order can have many items)
-- orders → payment_transactions (one order can have many transactions)
-- shipping_addresses → orders (one address can be used for many orders)
-- payment_methods → orders (one payment method can be used for many orders)
-
-
+1.  **Hardcoded Relationships**: The `SchemaIntrospection` class currently has hardcoded foreign key relationships (`RELATIONSHIP SUMMARY`) tailored for a specific e-commerce schema (customers, orders, etc.). This needs to be generalized for use with arbitrary databases.
+2.  **Hardcoded Few-Shot Examples**: The `prompts.py` file contains static few-shot examples relevant only to the current specific domain.
+3.  **Ambiguity Handling**: While provisions exist for clarifying questions (`get_clarification_prompt`), they are not currently utilized in the main execution loop.
+4.  **Clickhouse Support**: Support for Clickhouse is currently experimental and not integrated into the main `NLToSQLAgent` class.
