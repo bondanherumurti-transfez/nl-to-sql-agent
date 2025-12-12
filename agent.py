@@ -91,8 +91,8 @@ class NLToSQLAgent:
                 max_tokens=2000,
                 temperature=0,
                 messages=[{
-                    role:"user",
-                    content: prompt
+                    "role": "user",
+                    "content": prompt
                 }]
             )
 
