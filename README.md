@@ -1,6 +1,6 @@
 # NL-to-SQL Agent
 
-A robust Natural Language to SQL agent that empowers non-technical users to query business analytics data using plain English. Built with Python, PostgreSQL, and Anthropic's Claude 3.5 Sonnet.
+A robust Natural Language to SQL agent that empowers non-technical users to query business analytics data using plain English. Built with Python, PostgreSQL, and Anthropic's Claude 4.5 Sonnet.
 
 ## 📋 Overview
 
