@@ -80,9 +80,34 @@ python agent.py
 *   `schema`: View the currently loaded schema context.
 *   `exit`, `quit`, `q`: Exit the program.
 
+### Advanced Configuration (Optional)
+
+You can customize the schema introspection by creating a `schema_config.json` file in the root directory. This allows you to define relationships for databases without Foreign Keys and specify Enum values for columns.
+
+**`schema_config.json` Example:**
+
+```json
+{
+  "relationships": [
+    {
+      "source": "customers",
+      "target": "orders",
+      "description": "one customer can have many orders"
+    }
+  ],
+  "enums": {
+    "orders": {
+      "status": ["pending", "shipped", "delivered"]
+    }
+  }
+}
+```
+
+*   **relationships**: Defines how tables are connected (useful if Foreign Keys are missing).
+*   **enums**: Injects allowed values into the prompt, helping the LLM generate correct `WHERE` clauses.
+
 ## ⚠️ Limitations & Known Issues
 
-1.  **Hardcoded Relationships**: The `SchemaIntrospection` class currently has hardcoded foreign key relationships (`RELATIONSHIP SUMMARY`) tailored for a specific e-commerce schema (customers, orders, etc.). This needs to be generalized for use with arbitrary databases.
-2.  **Hardcoded Few-Shot Examples**: The `prompts.py` file contains static few-shot examples relevant only to the current specific domain.
-3.  **Ambiguity Handling**: While provisions exist for clarifying questions (`get_clarification_prompt`), they are not currently utilized in the main execution loop.
-4.  **Clickhouse Support**: Support for Clickhouse is currently experimental and not integrated into the main `NLToSQLAgent` class.
+1.  **Hardcoded Few-Shot Examples**: The `prompts.py` file contains static few-shot examples relevant only to the current specific domain.
+2.  **Ambiguity Handling**: While provisions exist for clarifying questions (`get_clarification_prompt`), they are not currently utilized in the main execution loop.
+3.  **Clickhouse Support**: Support for Clickhouse is currently experimental and not integrated into the main `NLToSQLAgent` class.

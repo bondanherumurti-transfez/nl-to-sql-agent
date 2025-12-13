@@ -79,6 +79,81 @@ class SchemaIntrospection:
         self.cursor.execute(query, (limit,))
         return self.cursor.fetchall()
     
+    
+    def load_config(self) -> Dict:
+        """Load configuration from schema_config.json if it exists"""
+        import json
+        import os
+        
+        config = {
+            "relationships": [],
+            "enums": {}
+        }
+        config_path = "schema_config.json"
+        
+        if os.path.exists(config_path):
+            try:
+                with open(config_path, 'r') as f:
+                    file_data = json.load(f)
+                    
+                    # Handle new format vs legacy format (if any legacy format existed, but we deleted it)
+                    # Support new structured format
+                    if "relationships" in file_data:
+                        config["relationships"] = file_data["relationships"]
+                    if "enums" in file_data:
+                        config["enums"] = file_data["enums"]
+                        
+                    # Support flat list (fallback/legacy) - unlikely needed but safe 
+                    if isinstance(file_data, list):
+                        config["relationships"] = file_data
+                        
+            except Exception as e:
+                print(f"Warning: Failed to load schema config: {e}")
+                
+        return config
+
+    def get_configured_relationships(self) -> List[str]:
+        """Get relationships from config"""
+        config = self.load_config()
+        relationships = []
+        for item in config["relationships"]:
+            if 'source' in item and 'target' in item and 'description' in item:
+                relationships.append(
+                    f"- {item['source']} → {item['target']} ({item['description']})"
+                )
+        return relationships
+        
+    def get_column_enums(self, table: str, column: str) -> Optional[List[str]]:
+        """Get enum values for a column if defined in config"""
+        config = self.load_config()
+        enums = config.get("enums", {})
+        table_enums = enums.get(table, {})
+        return table_enums.get(column)
+
+    def generate_relationship_summary(self) -> str:
+        """Generate relationship summary from DB FKs and Config"""
+        relationships = set()
+        
+        # 1. Load from Config
+        configured = self.get_configured_relationships()
+        for r in configured:
+            relationships.add(r)
+            
+        # 2. Auto-discover from FKs if needed
+        if not relationships:
+            tables = self.get_tables()
+            for table in tables:
+                fkeys = self.get_foreign_keys(table)
+                for fk in fkeys:
+                    relationships.add(
+                        f"- {table} → {fk['references_table']} (via {fk['column']})"
+                    )
+        
+        if not relationships:
+            return "No specific table relationships defined."
+            
+        return "Key Relationships:\n" + "\n".join(sorted(list(relationships)))
+
     def get_full_schema_context(self) -> str:
         """Generate complete schema context for LLM"""
         schema_parts = []
@@ -98,7 +173,12 @@ class SchemaIntrospection:
             for col in columns:
                 nullable = "NULL" if col['nullable'] else "NOT NULL"
                 default = f", DEFAULT: {col['default']}" if col['default'] else ""
-                schema_parts.append(f"  - {col['name']} ({col['type']}, {nullable}{default})")
+                
+                # Check for enums
+                enums = self.get_column_enums(table, col['name'])
+                enum_str = f", Enum: {enums}" if enums else ""
+                
+                schema_parts.append(f"  - {col['name']} ({col['type']}, {nullable}{default}{enum_str})")
             
             # Foreign Keys
             fkeys = self.get_foreign_keys(table)
@@ -126,16 +206,7 @@ class SchemaIntrospection:
         schema_parts.append("\n" + "=" * 80)
         schema_parts.append("RELATIONSHIP SUMMARY")
         schema_parts.append("=" * 80)
-        schema_parts.append("""
-Key Relationships:
-- customers → orders (one customer can have many orders)
-- customers → shipping_addresses (one customer can have many addresses)
-- customers → payment_methods (one customer can have many payment methods)
-- orders → order_items (one order can have many items)
-- orders → payment_transactions (one order can have many transactions)
-- shipping_addresses → orders (one address can be used for many orders)
-- payment_methods → orders (one payment method can be used for many orders)
-""")
+        schema_parts.append(self.generate_relationship_summary())
         
         return "\n".join(schema_parts)
 

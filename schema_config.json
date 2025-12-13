@@ -1,0 +1,63 @@
+{
+    "relationships": [
+        {
+            "source": "customers",
+            "target": "orders",
+            "description": "one customer can have many orders"
+        },
+        {
+            "source": "customers",
+            "target": "shipping_addresses",
+            "description": "one customer can have many addresses"
+        },
+        {
+            "source": "customers",
+            "target": "payment_methods",
+            "description": "one customer can have many payment methods"
+        },
+        {
+            "source": "orders",
+            "target": "order_items",
+            "description": "one order can have many items"
+        },
+        {
+            "source": "orders",
+            "target": "payment_transactions",
+            "description": "one order can have many transactions"
+        },
+        {
+            "source": "shipping_addresses",
+            "target": "orders",
+            "description": "one address can be used for many orders"
+        },
+        {
+            "source": "payment_methods",
+            "target": "orders",
+            "description": "one payment method can be used for many orders"
+        }
+    ],
+    "enums": {
+        "payment_transactions": {
+            "transaction_status": [
+                "completed",
+                "pending",
+                "failed"
+            ]
+        },
+        "payment_methods": {
+            "payment_type": [
+                "credit_card",
+                "debit_card",
+                "paypal"
+            ]
+        },
+        "orders": {
+            "order_status": [
+                "processing",
+                "delivered",
+                "shipped",
+                "pending"
+            ]
+        }
+    }
+}
