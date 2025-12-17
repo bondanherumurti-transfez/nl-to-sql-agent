@@ -250,11 +250,30 @@ If using DO managed PostgreSQL:
 3. Use private VPC connection (faster, more secure)
 4. Get connection details from database dashboard
 
-### Option C: Database in DigitalOcean Droplet
+### Option D: Neon Serverless PostgreSQL (Recommended)
 
-1. Set up VPC network
-2. Add both app and droplet to same VPC
-3. Use private IP for `DB_HOST`
+1. Sign up at [Neon.tech](https://neon.tech).
+2. Create a new project (e.g., `nl-to-sql-agent-db`).
+3. Select the latest PostgreSQL version.
+4. In the Dashboard, find your **Connection String**. It will look like:
+   `postgresql://alex:AbC123dEf@ep-cool-darkness-123456.us-east-2.aws.neon.tech/neondb?sslmode=require`
+5. Extract the credentials for your DigitalOcean Environment Variables:
+   - **DB_HOST**: `ep-cool-darkness-123456.us-east-2.aws.neon.tech`
+   - **DB_USER**: `alex`
+   - **DB_PASSWORD**: `AbC123dEf`
+   - **DB_NAME**: `neondb`
+   - **DB_PORT**: `5432`
+
+### Step 9: Initialize Schema (Neon)
+
+To set up your tables using the provided sample schema:
+
+1. In the Neon Console, go to the **SQL Editor** tab.
+2. Open the file [sample_schema.sql](file:///Users/bondanherumurti/Documents/Projects/nl-to-sql-agent/samples/sample_schema.sql).
+3. Copy the entire content of the SQL file.
+4. Paste it into the Neon SQL Editor.
+5. Click **Run**.
+6. Verify tables are created in the **Tables** tab.
 
 ## Advanced Configuration
 

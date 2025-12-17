@@ -2,10 +2,13 @@
 
 ## ✅ Pre-Deployment (Do This First)
 
-### 1. Get Telegram Bot Token
-- [ ] Open Telegram, find @BotFather
-- [ ] Send `/newbot` and follow prompts
-- [ ] Copy your bot token (keep it safe!)
+### 1. Set Up Neon Database
+- [ ] Sign up at [Neon.tech](https://neon.tech)
+- [ ] Create a new project
+- [ ] Copy the connection string and extract credentials (Host, User, Password, DB Name)
+- [ ] Go to Neon **SQL Editor**
+- [ ] Copy content from `samples/sample_schema.sql` and run it in the editor
+- [ ] Verify tables are created in Neon UI
 
 ### 2. Test Bot Locally
 ```bash
@@ -103,6 +106,12 @@ DB_PASSWORD = your_db_password (Encrypt: ✅)
 ```
 ANTHROPIC_API_KEY = your_claude_key (Encrypt: ✅)
 TELEGRAM_BOT_TOKEN = your_telegram_token (Encrypt: ✅)
+```
+
+**PostgreSQL Connection Options (for Neon):**
+```
+DB_SSLMODE = require (Encrypt: ❌)
+DB_CHANNEL_BINDING = require (Encrypt: ❌)
 ```
 
 **Optional Settings:**

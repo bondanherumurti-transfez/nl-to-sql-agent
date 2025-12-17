@@ -84,6 +84,8 @@ Create a `.env` file in the root directory with the following variables:
 | `DB_PASSWORD` | Database Password | Yes | - |
 | `MAX_RETRIES` | Max attempts to fix failed SQL | No | 3 |
 | `QUERY_TIMEOUT` | Query timeout in seconds | No | 30 |
+| `DB_SSLMODE` | PostgreSQL SSL Mode | No | `require` |
+| `DB_CHANNEL_BINDING` | PostgreSQL Channel Binding | No | - |
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token (for bot mode) | For bot only | - |
 | `TELEGRAM_ALLOWED_USERS` | Comma-separated user IDs | No | - |
 
@@ -109,10 +111,20 @@ Deploy your agent as a Telegram bot for team-wide access!
 **Quick Start:**
 1. Create a bot with [@BotFather](https://t.me/botfather)
 2. Get your bot token
-3. Add token to `.env`:
-   ```bash
-   TELEGRAM_BOT_TOKEN=your_token_here
-   ```
+3. Add token and database settings to your environment (DigitalOcean or `.env`):
+
+**API Keys:**
+```bash
+ANTHROPIC_API_KEY=your_claude_key
+TELEGRAM_BOT_TOKEN=your_telegram_token
+```
+
+**PostgreSQL Connection Options (for Neon):**
+```bash
+DB_SSLMODE=require
+DB_CHANNEL_BINDING=require
+```
+
 4. Run locally:
    ```bash
    python bot_telegram.py

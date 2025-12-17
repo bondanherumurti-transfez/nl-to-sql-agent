@@ -34,7 +34,13 @@ class NLToSQLAgent:
             "user": os.getenv("DB_USER"),
             "password": os.getenv("DB_PASSWORD"),
             "database": os.getenv("DB_NAME"),
+            "sslmode": os.getenv("DB_SSLMODE", "require"),
         }
+
+        # Add optional channel_binding or other parameters if provided
+        channel_binding = os.getenv("DB_CHANNEL_BINDING")
+        if channel_binding:
+            self.db_config["channel_binding"] = channel_binding
 
         self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         self.model = "claude-sonnet-4-5"
