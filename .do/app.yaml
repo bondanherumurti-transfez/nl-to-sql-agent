@@ -4,7 +4,7 @@ region: nyc
 services:
   - name: telegram-bot
     github:
-      repo: your-username/nl-to-sql-agent
+      repo: bondanherumurti-transfez/nl-to-sql-agent
       branch: main
       deploy_on_push: true
     dockerfile_path: Dockerfile
