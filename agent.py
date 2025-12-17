@@ -80,28 +80,22 @@ class NLToSQLAgent:
         Returns:
             New SQL query
         """
-        print(f"{Fore.YELLOW}Attempt {attempt}: Regenerating SQL with error context...{Style.RESET_ALL}")
-
         schema = self.load_schema_context()
         prompt = get_error_recovery_prompt(schema, natural_query, failed_sql, error_message)
 
-        try:
-            response = self.client.messages.create(
-                model=self.model,
-                max_tokens=2000,
-                temperature=0,
-                messages=[{
-                    "role": "user",
-                    "content": prompt
-                }]
-            )
+        response = self.client.messages.create(
+            model=self.model,
+            max_tokens=2000,
+            temperature=0,
+            messages=[{
+                "role": "user",
+                "content": prompt
+            }]
+        )
 
-            sql = response.content[0].text.strip()
-            sql = SQLValidator(sql).clean(sql)
-            return sql
-        except Exception as e:
-            print(f"{Fore.RED}🙅‍♂️Retry failed: {e}{Style.RESET_ALL}")
-            raise
+        sql = response.content[0].text.strip()
+        sql = SQLValidator(sql).clean(sql)
+        return sql
 
     def generate_sql(self, natural_query: str) -> str:
         """
@@ -118,28 +112,19 @@ class NLToSQLAgent:
 
         full_prompt = f"{prompt}\n\nQuestion: {natural_query}\n\nSQL:"
 
-        #print full prompt here
-        # print(f"{Fore.CYAN}Full Prompt: {full_prompt}{Style.RESET_ALL}")
+        response = self.client.messages.create(
+            model=self.model,
+            max_tokens=2000,
+            temperature=0,
+            messages=[{
+                "role": "user",
+                "content": full_prompt
+            }]
+        )
         
-        print(f"{Fore.CYAN}Generating SQL...{Style.RESET_ALL}")
-
-        try:
-            response = self.client.messages.create(
-                model=self.model,
-                max_tokens=2000,
-                temperature=0,
-                messages=[{
-                    "role": "user",
-                    "content": full_prompt
-                }]
-            )
-            
-            sql = response.content[0].text.strip()
-            sql = SQLValidator.clean_sql(sql)            
-            return sql
-        except Exception as e:
-            print(f"{Fore.RED}✗ SQL generation failed: {e}{Style.RESET_ALL}")
-            raise
+        sql = response.content[0].text.strip()
+        sql = SQLValidator.clean_sql(sql)            
+        return sql
     
     def execute_sql(self, sql: str) -> Tuple[List[tuple], List[str]]:
         """
@@ -186,10 +171,6 @@ class NLToSQLAgent:
         Returns:
             Dict containing query result and metadata
         """
-        print(f"\n{Fore.BLUE}{'='*80}{Style.RESET_ALL}")
-        print(f"{Fore.BLUE}Question: {natural_query}{Style.RESET_ALL}")
-        print(f"{Fore.BLUE}{'='*80}{Style.RESET_ALL}\n")
-
         sql = None
         results = None
         column_names = None
@@ -202,27 +183,20 @@ class NLToSQLAgent:
                 else:
                     sql = self.retry_with_error(natural_query, sql, error, attempt)
                 
-                print(f"{Fore.CYAN}Generated SQL:{Style.RESET_ALL}")
-                print(f"{Fore.WHITE}{sql}{Style.RESET_ALL}\n")
-
-                #validate SQL
+                # Validate SQL
                 is_safe, message = SQLValidator.is_safe_query(sql)
                 if not is_safe:
                     return {
                         'success': False,
-                        'error': f"‼️Unsafe SQL detected: {message}",
-                        'sql': sql
+                        'error': f"Unsafe SQL detected: {message}",
+                        'sql': sql,
+                        'attempt': attempt
                     }
                 
                 sql = SQLValidator.add_limit_if_missing(sql, self.default_limit)
 
                 # Execute SQL
-                print(f"{Fore.CYAN}Prepare to execute query...{Style.RESET_ALL}")
                 results, column_names = self.execute_sql(sql)
-
-                # Success!
-                print(f"{Fore.GREEN}✓ Query executed successfully{Style.RESET_ALL}")
-                print(f"{Fore.GREEN}✓ Retrieved {len(results)} rows{Style.RESET_ALL}\n")
                 
                 return {
                     'success': True,
@@ -234,46 +208,58 @@ class NLToSQLAgent:
                 }
             except Exception as e:
                 error = str(e)
-                print(f"{Fore.RED}✗ Attempt {attempt} failed: {error}{Style.RESET_ALL}\n")
-
                 if attempt == self.max_retries:
                     return {
                         'success': False,
                         'error': f"Failed after {self.max_retries} attempts. Last error: {error}",
-                        'sql': sql
+                        'sql': sql,
+                        'attempt': attempt
                     }
-                
         
         return {
             'success': False,
             'error': 'Unknown error occurred',
-            'sql': sql
+            'sql': sql,
+            'attempt': self.max_retries
         }
     
 
-    def format_results(self, result: Dict[str, Any]) -> str:
+    def format_for_cli(self, result: Dict[str, Any], natural_query: str = None) -> str:
         """
-        Format query results for display
+        Format query results for CLI display with colors
         
         Args:
             result: Result dictionary from query method
+            natural_query: Original natural language query (optional)
             
         Returns:
-            Formatted string
+            Formatted string with color codes for CLI
         """
-        if not result['success']:
-            return f"{Fore.RED}Error: {result['error']}{Style.RESET_ALL}"
-
         output = []
+        
+        # Show question if provided
+        if natural_query:
+            output.append(f"\n{Fore.BLUE}{'='*80}{Style.RESET_ALL}")
+            output.append(f"{Fore.BLUE}Question: {natural_query}{Style.RESET_ALL}")
+            output.append(f"{Fore.BLUE}{'='*80}{Style.RESET_ALL}\n")
+        
+        if not result['success']:
+            output.append(f"{Fore.RED}Error: {result['error']}{Style.RESET_ALL}")
+            if result.get('sql'):
+                output.append(f"\n{Fore.YELLOW}Failed SQL:{Style.RESET_ALL}")
+                output.append(result['sql'])
+            return "\n".join(output)
 
-        #Show SQL query
-        output.append(f"{Fore.CYAN}SQL Query:{Style.RESET_ALL}")
-        output.append(result['sql'])
+        # Show SQL query
+        output.append(f"{Fore.CYAN}Generated SQL:{Style.RESET_ALL}")
+        output.append(f"{Fore.WHITE}{result['sql']}{Style.RESET_ALL}")
         output.append("")
 
-        #Show results
+        # Show results
         if result['row_count'] > 0:
-            output.append(f"{Fore.GREEN}Results ({result['row_count']} rows):{Style.RESET_ALL}")
+            output.append(f"{Fore.GREEN}✓ Query executed successfully{Style.RESET_ALL}")
+            output.append(f"{Fore.GREEN}✓ Retrieved {result['row_count']} rows{Style.RESET_ALL}\n")
+            output.append(f"{Fore.GREEN}Results:{Style.RESET_ALL}")
 
             table = tabulate(result['results'], headers=result['column_names'], tablefmt='fancy_grid')
             output.append(table)
@@ -308,9 +294,11 @@ class NLToSQLAgent:
                     print(f"\n{schema}\n")
                     continue
                 
+                # Show progress messages for CLI
+                print(f"{Fore.CYAN}Generating SQL...{Style.RESET_ALL}")
                 result = self.query(user_input)
-                formatted = self.format_results(result)
-                print(f"\n{formatted}\n")
+                formatted = self.format_for_cli(result, user_input)
+                print(formatted)
                 
             except KeyboardInterrupt:
                 print(f"\n\n{Fore.CYAN}Goodbye!{Style.RESET_ALL}\n")
