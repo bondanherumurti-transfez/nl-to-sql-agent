@@ -7,8 +7,8 @@
 - [ ] Create a new project
 - [ ] Copy the connection string and extract credentials (Host, User, Password, DB Name)
 - [ ] Go to Neon **SQL Editor**
-- [ ] Copy content from `samples/sample_schema.sql` and run it in the editor
-- [ ] Verify tables are created in Neon UI
+- [ ] Copy content from `samples/generate_sample_data.sql` and run it in the editor
+- [ ] Verify tables are created and data is populated in Neon UI
 
 ### 2. Test Bot Locally
 ```bash

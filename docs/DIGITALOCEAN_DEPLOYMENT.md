@@ -264,12 +264,12 @@ If using DO managed PostgreSQL:
    - **DB_NAME**: `neondb`
    - **DB_PORT**: `5432`
 
-### Step 9: Initialize Schema (Neon)
+### Step 9: Initialize Schema and Data (Neon)
 
-To set up your tables using the provided sample schema:
+To set up your database tables and populate them with sample data:
 
 1. In the Neon Console, go to the **SQL Editor** tab.
-2. Open the file [sample_schema.sql](file:///Users/bondanherumurti/Documents/Projects/nl-to-sql-agent/samples/sample_schema.sql).
+2. Open the file [generate_sample_data.sql](file:///Users/bondanherumurti/Documents/Projects/nl-to-sql-agent/samples/generate_sample_data.sql).
 3. Copy the entire content of the SQL file.
 4. Paste it into the Neon SQL Editor.
 5. Click **Run**.
