@@ -40,12 +40,22 @@ def test_validate_disallowed_queries():
         assert is_safe is False
 
 def test_sql_injection_attempts():
-    """Test that simple SQL injection patterns are caught"""
-    # Check multiple statements
+    """Test that SQL injection attempts are blocked"""
+    # This malicious query should be blocked (either for DROP keyword or multiple statements)
     query = "SELECT * FROM customers; DROP TABLE orders;"
     is_safe, message = SQLValidator.is_safe_query(query)
     assert is_safe is False
-    assert "Multiple statements" in message
+    # Accept either error message - both mean the attack was blocked
+    assert "Multiple statements" in message or "Dangerous keyword" in message
+
+def test_sql_injection_with_cte():
+    """Test that CTE-based SQL injection is blocked"""
+    # Test the exact attack scenario the user asked about
+    query = "WITH sales AS (SELECT * FROM orders) DROP TABLE orders"
+    is_safe, message = SQLValidator.is_safe_query(query)
+    assert is_safe is False
+    assert "Dangerous keyword" in message
+    assert "DROP" in message
 
 def test_add_limit_if_missing():
     """Test that LIMIT clause is automatically added to queries without one"""

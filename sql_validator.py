@@ -55,8 +55,8 @@ class SQLValidator:
             if re.search(pattern, sql_upper):
                 return False, f"Dangerous keyword detected: {keyword}"
         
-        # Must start with SELECT
-        if not sql_upper.strip().startswith('SELECT') or not sql_upper.strip().startswith('WITH'):
+        # Must start with SELECT or WITH    
+        if not (sql_upper.strip().startswith('SELECT') or sql_upper.strip().startswith('WITH')):
             return False, "Query must start with SELECT or WITH"
         
         # Check for semicolons (multiple statements)
