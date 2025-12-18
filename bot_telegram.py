@@ -59,15 +59,19 @@ class TelegramNLToSQLBot:
         
         welcome_message = (
             f"👋 Hi {user.first_name}!\n\n"
-            "I'm your NL-to-SQL assistant. I can help you query your database using natural language.\n\n"
-            "Just send me your question in plain English, like:\n"
-            "• _How many customers do we have?_\n"
-            "• _Show me total revenue by month_\n"
-            "• _What are the top 5 products by sales?_\n\n"
-            "Commands:\n"
-            "/help - Show this message\n"
-            "/schema - View database schema\n\n"
-            "Let's get started! 🚀"
+            "I'm your **NL-to-SQL data assistant**. 📊\n\n"
+            "Imagine you are an **e-commerce owner** with a complete database containing "
+            "customers, products, orders, shipping details, and payment transactions. "
+            "You can now query this data just like you'd ask your lead data analyst!\n\n"
+            "Try asking me questions like:\n"
+            "• _How many customers do we have in our database?_\n"
+            "• _Show me the total revenue grouped by month_\n"
+            "• _What are our top 5 products by sales volume?_\n"
+            "• _Which products are currently low on stock?_\n\n"
+            "Available Commands:\n"
+            "/help - Detailed usage guide\n"
+            "/schema - View technical database structure\n\n"
+            "What would you like to know about your business today? 🚀"
         )
         
         await update.message.reply_text(welcome_message, parse_mode=ParseMode.MARKDOWN)
