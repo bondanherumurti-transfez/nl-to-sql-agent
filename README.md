@@ -13,6 +13,12 @@ This agent acts as an intelligent bridge between human questions and your databa
 
 **New**: Deploy as a Telegram bot for easy team access! 🤖
 
+## 🎮 Live Demo
+
+Try the bot now: **[@bon_nl_to_sql_poc_bot](https://t.me/bon_nl_to_sql_poc_bot)**
+
+Send `/start` to begin querying the sample e-commerce database!
+
 ## 🏗️ Architecture
 
 ### CLI Mode
