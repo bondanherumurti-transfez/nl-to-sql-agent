@@ -139,8 +139,9 @@ Deploy to DigitalOcean for 24/7 availability (~$5/month):
 ## 📚 Documentation
 
 - **[Telegram Bot Setup](docs/TELEGRAM_SETUP.md)** - Step-by-step bot creation
-- **[Bot Technical Docs](docs/BOT_TELEGRAM_DOCS.md)** - Detailed bot documentation
+- **[Bot Technical Documentation](docs/BOT_TELEGRAM_DOCS.md)** - Architecture and features
 - **[DigitalOcean Deployment](docs/DIGITALOCEAN_DEPLOYMENT.md)** - Production deployment guide
+- **[Testing Guide](docs/TESTING.md)** - Running and writing tests
 
 ### Advanced Configuration (Optional)
 
