@@ -100,7 +100,7 @@ class NLToSQLAgent:
         )
 
         sql = response.content[0].text.strip()
-        sql = SQLValidator(sql).clean(sql)
+        sql = SQLValidator.clean_sql(sql)
         return sql
 
     def generate_sql(self, natural_query: str) -> str:
