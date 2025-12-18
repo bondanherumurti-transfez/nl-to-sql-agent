@@ -21,6 +21,16 @@
             "description": "one order can have many items"
         },
         {
+            "source": "order_items",
+            "target": "products",
+            "description": "one order item can have one product"
+        },
+        {
+            "source": "products",
+            "target": "order_items",
+            "description": "one product can be in many order items"
+        },
+        {
             "source": "orders",
             "target": "payment_transactions",
             "description": "one order can have many transactions"
@@ -57,6 +67,14 @@
                 "delivered",
                 "shipped",
                 "pending"
+            ]
+        },
+        "products": {
+            "category": [
+                "electronics",
+                "clothing",
+                "books",
+                "home goods"
             ]
         }
     }
