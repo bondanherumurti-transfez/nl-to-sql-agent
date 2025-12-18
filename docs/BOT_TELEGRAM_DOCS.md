@@ -67,7 +67,7 @@ async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE
     
     Sends welcome message with:
     - Bot introduction
-    - Example queries
+    - Inline keyboard buttons with example queries
     - Available commands
     
     Checks user access before responding
@@ -76,8 +76,17 @@ async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE
 
 **Response includes:**
 - Welcome message
-- Usage examples
+- **Clickable inline keyboard buttons** with example questions:
+  - 📊 How many customers?
+  - 💰 Revenue by month
+  - 🏆 Top 5 products
+  - 📦 Low stock items
 - List of available commands
+
+**User Experience:**
+- Users can click buttons to instantly send predefined queries
+- Buttons appear only once in the welcome message (clean UI)
+- Users can still type their own custom questions normally
 
 #### `/help` Command
 
@@ -145,6 +154,34 @@ async def handle_query(self, update: Update, context: ContextTypes.DEFAULT_TYPE)
 5. Execute query via agent
 6. Format results
 7. Send response (potentially split into multiple messages)
+
+#### Inline Button Callback Handler
+
+```python
+async def handle_button_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Handle inline keyboard button clicks
+    
+    Flow:
+    1. Acknowledge button click (prevents loading spinner)
+    2. Extract query text from callback_data
+    3. Log button click for monitoring
+    4. Send "thinking" message
+    5. Call agent.query() with the predefined question
+    6. Delete "thinking" message
+    7. Format and send response
+    
+    Error Handling:
+    - Catches all exceptions
+    - Logs errors with stack trace
+    - Sends user-friendly error message
+    """
+```
+
+**Button Format:**
+- Callback data: `query:Full question text here`
+- Example: `query:How many customers do we have in our database?`
+- Buttons are registered via `CallbackQueryHandler`
 
 ### Response Formatting
 
@@ -339,9 +376,10 @@ def run(self):
     Setup:
     1. Create Application with bot token
     2. Register command handlers (/start, /help, /schema)
-    3. Register message handler (for queries)
-    4. Register error handler
-    5. Start polling
+    3. Register callback handler (for inline button clicks)
+    4. Register message handler (for queries)
+    5. Register error handler
+    6. Start polling
     
     Uses long-polling mode:
     - No webhook URL needed
@@ -425,6 +463,6 @@ Potential improvements:
 - **Rate Limiting**: Per-user query limits
 - **Query History**: Track user queries for analytics
 - **Inline Queries**: Support for inline bot queries
-- **Callback Buttons**: Interactive result pagination
+- **Result Pagination**: Navigate through large result sets with buttons
 - **Multi-language Support**: i18n for error messages
 - **Database Selection**: Allow users to choose different databases
