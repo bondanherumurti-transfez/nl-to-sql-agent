@@ -52,8 +52,13 @@ class TelegramNLToSQLBot:
         
         if not self.is_user_allowed(user.id):
             await update.message.reply_text(
-                "⛔ Sorry, you don't have access to this bot.\n"
-                "Please contact the administrator."
+                "⛔ Sorry, you don't have access to this bot.\n\n"
+                "To get access, please send your **Telegram ID** to Bon.\n\n"
+                "🔍 **How to find your ID:**\n"
+                "1. Search for @userinfobot in Telegram\n"
+                "2. Send it a message\n"
+                "3. Copy the numerical ID it sends back",
+                parse_mode=ParseMode.MARKDOWN
             )
             return
         
