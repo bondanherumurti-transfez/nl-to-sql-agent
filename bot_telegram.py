@@ -7,8 +7,8 @@ import os
 import logging
 from typing import Optional
 from dotenv import load_dotenv
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from telegram.constants import ParseMode
 
 from agent import NLToSQLAgent
@@ -68,18 +68,23 @@ class TelegramNLToSQLBot:
             "Imagine you are an **e-commerce owner** with a complete database containing "
             "customers, products, orders, shipping details, and payment transactions. "
             "You can now query this data just like you'd ask your lead data analyst!\n\n"
-            "Try asking me questions like:\n"
-            "• _How many customers do we have in our database?_\n"
-            "• _Show me the total revenue grouped by month_\n"
-            "• _What are our top 5 products by sales volume?_\n"
-            "• _Which products are currently low on stock?_\n\n"
+            "👇 **Click a question below to try it out:**\n\n"
             "Available Commands:\n"
             "/help - Detailed usage guide\n"
             "/schema - View technical database structure\n\n"
-            "What would you like to know about your business today? 🚀"
+            "‼️ This project is highly experimental, AI might hallucinate and does not recall memory‼️"
         )
         
-        await update.message.reply_text(welcome_message, parse_mode=ParseMode.MARKDOWN)
+        # Create clickable example questions as inline buttons
+        keyboard = [
+            [InlineKeyboardButton("📊 How many customers?", callback_data="query:How many customers do we have in our database?")],
+            [InlineKeyboardButton("💰 Revenue by month", callback_data="query:Show me the total revenue grouped by month")],
+            [InlineKeyboardButton("🏆 Top 5 products", callback_data="query:What are our top 5 products by sales volume?")],
+            [InlineKeyboardButton("📦 Low stock items", callback_data="query:Which products are currently low on stock?")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await update.message.reply_text(welcome_message, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
     
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /help command"""
@@ -287,6 +292,60 @@ class TelegramNLToSQLBot:
         
         return parts
     
+    async def handle_button_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle inline keyboard button clicks"""
+        query = update.callback_query
+        await query.answer()  # Acknowledge the button click
+        
+        # Extract the query text from callback_data
+        callback_data = query.data
+        if callback_data.startswith("query:"):
+            natural_query = callback_data[6:]  # Remove "query:" prefix
+            
+            # Log the button click
+            user = update.effective_user
+            logger.info(f"User {user.id} ({user.username}) clicked button: {natural_query}")
+            
+            # Send "thinking" message
+            thinking_msg = await query.message.reply_text("🤔 Processing your question...")
+            
+            try:
+                # Query the agent
+                result = self.agent.query(natural_query)
+                
+                # Delete thinking message
+                await thinking_msg.delete()
+                
+                # Format and send response
+                if result['success']:
+                    response = self.format_success_response(result)
+                else:
+                    response = self.format_error_response(result)
+                
+                # Send response
+                await self.send_long_message_to_query(query, response)
+                
+            except Exception as e:
+                logger.error(f"Error processing button query: {e}", exc_info=True)
+                await thinking_msg.delete()
+                await query.message.reply_text(
+                    f"❌ *Error*\n\n"
+                    f"An unexpected error occurred:\n"
+                    f"`{str(e)}`",
+                    parse_mode=ParseMode.MARKDOWN
+                )
+    
+    async def send_long_message_to_query(self, query, text: str):
+        """Send long messages by splitting if needed (for callback queries)"""
+        max_length = 4000
+        
+        if len(text) <= max_length:
+            await query.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
+        else:
+            parts = self.split_message(text, max_length)
+            for part in parts:
+                await query.message.reply_text(part, parse_mode=ParseMode.MARKDOWN)
+    
     async def error_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle errors"""
         logger.error(f"Update {update} caused error {context.error}")
@@ -308,6 +367,9 @@ class TelegramNLToSQLBot:
         application.add_handler(CommandHandler("start", self.start_command))
         application.add_handler(CommandHandler("help", self.help_command))
         application.add_handler(CommandHandler("schema", self.schema_command))
+        
+        # Register callback handler for inline buttons
+        application.add_handler(CallbackQueryHandler(self.handle_button_callback))
         
         # Register message handler for queries
         application.add_handler(MessageHandler(
