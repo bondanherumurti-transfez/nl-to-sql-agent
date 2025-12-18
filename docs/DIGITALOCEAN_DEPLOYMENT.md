@@ -132,7 +132,7 @@ Add the following environment variables as **encrypted** values:
 
 | Key | Value | Type | Default |
 |-----|-------|------|---------|
-| `TELEGRAM_ALLOWED_USERS` | User IDs (optional) | Plain | `` |
+| `TELEGRAM_ALLOWED_USERS` | Comma-separated **User IDs** (e.g. `12345678,87654321`) | Plain | `` |
 | `MAX_RETRIES` | Max SQL retry attempts | Plain | `3` |
 | `QUERY_TIMEOUT` | Query timeout (seconds) | Plain | `30` |
 | `DEFAULT_LIMIT` | Default result limit | Plain | `100` |

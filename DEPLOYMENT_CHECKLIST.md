@@ -189,8 +189,10 @@ DEFAULT_LIMIT = 100 (Encrypt: ❌)
 - Make sure all environment variables are set
 
 **"Access denied" in Telegram?**
-- Check if `TELEGRAM_ALLOWED_USERS` is set
-- If so, you need to add your Telegram user ID
+- Check if `TELEGRAM_ALLOWED_USERS` is set.
+- **IMPORTANT**: This must be your numerical **Telegram User ID**, not your username or phone number.
+- To find your ID: Message [@userinfobot](https://t.me/userinfobot) on Telegram.
+- Add this ID to your environment variables and redeploy.
 
 **Database connection failed?**
 - Verify database is accessible from internet
