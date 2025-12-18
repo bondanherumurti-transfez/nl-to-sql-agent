@@ -104,6 +104,6 @@ def test_query_integration(mock_agent_deps):
     result = agent.query("Show products")
     
     assert result['success'] is True
-    assert result['sql'] == "SELECT * FROM products;"
+    assert result['sql'] == "SELECT * FROM products LIMIT 100;"
     assert result['row_count'] == 1
     assert result['results'][0][0] == 'Product A'

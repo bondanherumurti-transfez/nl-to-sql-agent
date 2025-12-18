@@ -46,3 +46,25 @@ def test_sql_injection_attempts():
     is_safe, message = SQLValidator.is_safe_query(query)
     assert is_safe is False
     assert "Multiple statements" in message
+
+def test_add_limit_if_missing():
+    """Test that LIMIT clause is automatically added to queries without one"""
+    # Query without LIMIT should get one added
+    query_without_limit = "SELECT * FROM products"
+    result = SQLValidator.add_limit_if_missing(query_without_limit, default_limit=100)
+    assert "LIMIT 100" in result
+    assert result.endswith(";")
+
+def test_add_limit_preserves_existing():
+    """Test that queries with LIMIT are not modified"""
+    # Query with LIMIT should remain unchanged
+    query_with_limit = "SELECT * FROM products LIMIT 50;"
+    result = SQLValidator.add_limit_if_missing(query_with_limit, default_limit=100)
+    assert "LIMIT 50" in result
+    assert "LIMIT 100" not in result
+
+def test_add_limit_custom_value():
+    """Test that custom LIMIT values work correctly"""
+    query = "SELECT * FROM customers"
+    result = SQLValidator.add_limit_if_missing(query, default_limit=25)
+    assert "LIMIT 25" in result
