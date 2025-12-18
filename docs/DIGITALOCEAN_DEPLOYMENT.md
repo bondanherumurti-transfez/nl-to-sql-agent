@@ -68,7 +68,7 @@ services:
 ### 2.1 Access DigitalOcean Dashboard
 
 1. Log in to [DigitalOcean](https://cloud.digitalocean.com/)
-2. Click "Create" → "Apps"
+2. Click "Create" → "App Platform"
 
 ### 2.2 Connect GitHub
 

@@ -1,7 +1,7 @@
 name: nl-to-sql-bot
 region: nyc
 
-services:
+workers:
   - name: telegram-bot
     github:
       repo: bondanherumurti-transfez/nl-to-sql-agent
@@ -10,7 +10,6 @@ services:
     dockerfile_path: Dockerfile
     instance_count: 1
     instance_size_slug: basic-xxs
-    http_port: 8080
     
     envs:
       # Anthropic API Key
