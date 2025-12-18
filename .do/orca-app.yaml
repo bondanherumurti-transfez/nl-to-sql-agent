@@ -1,0 +1,68 @@
+alerts:
+- rule: DEPLOYMENT_FAILED
+- rule: DOMAIN_FAILED
+envs:
+- key: DB_HOST
+  scope: RUN_AND_BUILD_TIME
+  value: ep-odd-wave-a8tyhd8x-pooler.eastus2.azure.neon.tech
+- key: DB_PORT
+  scope: RUN_AND_BUILD_TIME
+  value: "5432"
+- key: DB_NAME
+  scope: RUN_AND_BUILD_TIME
+  value: neondb
+- key: DB_USER
+  scope: RUN_AND_BUILD_TIME
+  value: neondb_owner
+- key: DB_PASSWORD
+  scope: RUN_AND_BUILD_TIME
+  type: SECRET
+  value: EV[1:pgnqlB51+5QSaHS2ZiHMdmWATxd4NoLE:RWTIoTc12ahaZZpWfZVVc9EEa/WD5LWnyskN18fGgmM=]
+- key: DB_SSLMODE
+  scope: RUN_AND_BUILD_TIME
+  value: require
+- key: DB_CHANNEL_BINDING
+  scope: RUN_AND_BUILD_TIME
+  value: require
+- key: ANTHROPIC_API_KEY
+  scope: RUN_AND_BUILD_TIME
+  type: SECRET
+  value: EV[1:zeLa1E1Lh72HJpteEmvctAsaHKn8EGhw:N0An8DdUNQ6llByCuT4NlX9BLBeZRGvTRAKptRrHTXbNqM3YzEc64PfxSiBooEkZDJ+Zb2mqZkrtbYmgBo5uFRX7L/gl23HTzdkW8SXJjsOoaZpBcAU8vB8QiG3QZVSq7WttvrWBo6mM0fjC5LP1agTznS4/iBDmrZaxZg==]
+- key: MAX_RETRIES
+  scope: RUN_AND_BUILD_TIME
+  value: "3"
+- key: QUERY_TIMEOUT
+  scope: RUN_AND_BUILD_TIME
+  value: "30"
+- key: DEFAULT_LIMIT
+  scope: RUN_AND_BUILD_TIME
+  value: "100"
+- key: TELEGRAM_BOT_TOKEN
+  scope: RUN_AND_BUILD_TIME
+  type: SECRET
+  value: EV[1:jSZVqRvEgmnHpK4HGVOKcb/xW58OFGOE:YdUGaMlKnKpZlE1wfATKjZmQp1WrW5nqv5MxLy2iu+umXS62nnBThq1sbX2z5Ycqu+uFz66o2/9CgCFv2VM=]
+- key: TELEGRAM_ALLOWED_USERS
+  scope: RUN_AND_BUILD_TIME
+features:
+- buildpack-stack=ubuntu-22
+ingress:
+  rules:
+  - component:
+      name: nl-to-sql-agent
+    match:
+      authority:
+        exact: ""
+      path:
+        prefix: /
+name: orca-app
+region: nyc
+services:
+- dockerfile_path: /Dockerfile
+  github:
+    branch: main
+    deploy_on_push: true
+    repo: bondanherumurti-transfez/nl-to-sql-agent
+  instance_count: 1
+  instance_size_slug: apps-s-1vcpu-1gb-fixed
+  name: nl-to-sql-agent
+  source_dir: /
