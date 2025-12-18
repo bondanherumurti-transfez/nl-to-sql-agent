@@ -52,9 +52,16 @@ def test_generate_sql(mock_agent_deps):
     """Test SQL generation calling Anthropic API"""
     agent = NLToSQLAgent()
     
-    # Setup mock response
-    mock_response = MagicMock()
+    # Create a "fake" response that mimics what Claude API returns
+    # This prevents us from spending money on tokens during testing
+    mock_response = MagicMock()  # Step 1: Create a dummy response object
+    
+    # Step 2: Mimic Claude's data structure: response.content[0].text
+    # The real API returns a list with an object that has a .text attribute
     mock_response.content = [MagicMock(text="SELECT * FROM customers;")]
+    
+    # Step 3: "Intercept" the API call - when agent calls client.messages.create(),
+    # return our fake response instead of making a real API request
     mock_agent_deps['client'].messages.create.return_value = mock_response
     
     sql = agent.generate_sql("Show me all customers")
@@ -82,15 +89,17 @@ def test_query_integration(mock_agent_deps):
     """Test the full query flow from NL to results"""
     agent = NLToSQLAgent()
     
-    # Mock LLM
-    mock_response = MagicMock()
-    mock_response.content = [MagicMock(text="SELECT * FROM products;")]
-    mock_agent_deps['client'].messages.create.return_value = mock_response
+    # Mock the Claude LLM's response (same pattern as above)
+    # We're telling the test: "When the agent asks Claude for SQL, pretend Claude said this:"
+    mock_response = MagicMock()  # Create fake response object
+    mock_response.content = [MagicMock(text="SELECT * FROM products;")]  # Fake SQL from "Claude"
+    mock_agent_deps['client'].messages.create.return_value = mock_response  # Return it when called
     
-    # Mock DB
+    # Mock the Database's response
+    # We're telling the test: "When the agent runs SQL against the DB, pretend the DB returned this:"
     mock_cursor = mock_agent_deps['cursor']
-    mock_cursor.fetchall.return_value = [('Product A', 100)]
-    mock_cursor.description = [('name',), ('price',)]
+    mock_cursor.fetchall.return_value = [('Product A', 100)]  # Fake data rows
+    mock_cursor.description = [('name',), ('price',)]  # Fake column names
     
     result = agent.query("Show products")
     
