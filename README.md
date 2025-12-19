@@ -9,7 +9,8 @@ This agent acts as an intelligent bridge between human questions and your databa
 2.  Understanding natural language questions.
 3.  Generating valid, safe SQL queries using an LLM.
 4.  Executing queries and formatting results.
-5.  Auto-recovering from SQL errors.
+5.  Generating conversational narratives for query results.
+6.  Auto-recovering from SQL errors.
 
 **New**: Deploy as a Telegram bot for easy team access! 🤖
 

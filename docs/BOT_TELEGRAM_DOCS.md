@@ -146,6 +146,14 @@ async def handle_query(self, update: Update, context: ContextTypes.DEFAULT_TYPE)
     """
 ```
 
+#### Natural Language Narratives (New)
+
+The bot now provides a conversational summary of the results before showing the SQL and table. This is generated via a second LLM call to Claude after the query results are obtained.
+
+- **Limit**: To optimize tokens and costs, only the first 20 rows of results are sent to Claude for summarization.
+- **Tone**: Friendly, conversational, and direct.
+- **Fallback**: If the narrative generation fails, the bot gracefully proceeds to show the SQL and table without the summary.
+
 **Processing Steps:**
 1. Extract message text
 2. Validate user access
@@ -209,14 +217,17 @@ def format_success_response(self, result: dict) -> str:
     
     Features:
     - Shows retry attempt if > 1
+    - Displays natural language summary (if generated)
     - Formats results as ASCII table
-    - Limits display to 20 rows (shows count if more)
+    - Limits display to 20 rows (shows count and "trimming" notice if more)
     """
 ```
 
 **Format:**
 ```
 ✅ Query Successful
+
+📊 **Summary:** Your database currently has **1,250 customers**.
 
 Generated SQL:
 ```sql

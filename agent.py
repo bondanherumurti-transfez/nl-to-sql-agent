@@ -16,7 +16,8 @@ from sql_validator import SQLValidator
 from prompts import (
     get_base_prompt,
     get_error_recovery_prompt,
-    get_clarification_prompt
+    get_clarification_prompt,
+    get_narrative_prompt
 )
 
 init(autoreset=True)
@@ -132,6 +133,37 @@ class NLToSQLAgent:
         sql = SQLValidator.clean_sql(sql)            
         return sql
     
+    def generate_narrative(self, natural_query: str, sql: str, results: list, column_names: list, row_count: int) -> str:
+        """
+        Generate natural language summary of query results
+        
+        Args:
+            natural_query: Original user question
+            sql: Executed SQL query
+            results: Query results (limited to first 20 rows)
+            column_names: Column names
+            row_count: Total number of rows returned
+            
+        Returns:
+            Natural language summary
+        """
+        prompt = get_narrative_prompt(natural_query, sql, results, column_names, row_count)
+
+        try:
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=500,
+                temperature=0,
+                messages=[{
+                    "role": "user",
+                    "content": prompt
+                }]
+            )
+            return response.content[0].text.strip()
+        except Exception as e:
+            print(f"{Fore.RED}Error generating narrative: {e}{Style.RESET_ALL}")
+            return "Unable to generate summary."
+    
     def execute_sql(self, sql: str) -> Tuple[List[tuple], List[str]]:
         """
         Execute SQL query
@@ -210,7 +242,8 @@ class NLToSQLAgent:
                     'results': results,
                     'column_names': column_names,
                     'attempt': attempt,
-                    'row_count': len(results)
+                    'row_count': len(results),
+                    'natural_query': natural_query
                 }
             except Exception as e:
                 error = str(e)

@@ -225,6 +225,66 @@ QUERY_PATTERNS = {
 }
 
 
+def get_narrative_prompt(natural_query: str, sql: str, results: list, column_names: list, row_count: int) -> str:
+    """
+    Generate prompt for natural language summary of query results
+    
+    Args:
+        natural_query: Original user question
+        sql: Executed SQL query
+        results: Query results (limited to first 20 rows)
+        column_names: Column names
+        row_count: Total number of rows returned
+        
+    Returns:
+        Prompt for narrative generation
+    """
+    # Format results as a readable table
+    results_text = ""
+    if results:
+        # Header
+        results_text += " | ".join(column_names) + "\n"
+        results_text += "-" * (len(column_names) * 15) + "\n"
+        
+        # Rows (limit to first 20)
+        for row in results[:20]:
+            results_text += " | ".join(str(val) if val is not None else "NULL" for val in row) + "\n"
+        
+        if row_count > 20:
+            results_text += f"\n... ({row_count - 20} more rows not shown)\n"
+    
+    prompt = f"""You are a friendly data analyst. A user asked a question about their database, and a SQL query was executed. Please provide a brief, natural language summary of the results.
+
+USER'S QUESTION:
+{natural_query}
+
+SQL EXECUTED:
+{sql}
+
+RESULTS ({row_count} total rows):
+{results_text if results else "No results found."}
+
+INSTRUCTIONS:
+1. Write a concise 1-2 sentence summary in a friendly, conversational tone
+2. Include the key numbers or insights from the results
+3. Use "you have" or "your database contains" phrasing
+4. If no results, say "No records found matching your query."
+5. For counts/aggregates, emphasize the number
+6. For lists, mention "Found X records" and highlight top items
+7. Do NOT just repeat the table data
+8. Do NOT include technical jargon
+
+EXAMPLE SUMMARIES:
+- "Your database currently has **1,250 customers**."
+- "Found **15 orders** from last week, with a total value of **$4,532**."
+- "The top product by sales is **'Premium Widget'** with 342 units sold."
+- "No orders found matching those criteria."
+
+Now, write a natural lang summary (1-2 sentences max):"""
+    
+    return prompt
+
+
 if __name__ == "__main__":
     # Test prompt generation
     sample_schema = "TABLE: customers\n- customer_id (INTEGER)\n- first_name (VARCHAR)\n- last_name (VARCHAR)"

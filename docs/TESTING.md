@@ -8,6 +8,7 @@ The project includes **18 automated tests** across 4 test files, covering:
 - SQL validation and security
 - Core agent logic
 - Telegram bot handlers
+- Natural language response generation
 - Database schema relationships
 
 ## Quick Start
@@ -115,7 +116,24 @@ pytest -k "injection"
 
 ---
 
-### 4. Relationship Tests (`test_relationships.py`)
+### 4. Narrative Tests (`tests/test_narrative.py`)
+
+**3 tests** covering natural language summary generation.
+
+| Test | What It Validates |
+|------|-------------------|
+| `test_generate_narrative_success` | Successful summary generation via Claude |
+| `test_generate_narrative_failure` | Graceful fallback when API fails |
+| `test_query_includes_natural_query` | Original question is preserved in result |
+
+**Mocking Strategy:**
+- Claude API is mocked to test summary generation logic
+- Verifies that results are correctly passed to the prompt
+- Ensures "Unable to generate summary" is returned on failure
+
+---
+
+### 5. Relationship Tests (`test_relationships.py`)
 
 **1 test** in the project root (legacy test).
 
@@ -130,9 +148,10 @@ pytest -k "injection"
 When you run `pytest`, you'll see output like:
 
 ```
-test_relationships.py .                  [ 5%]
-tests/test_agent.py ....                 [ 27%]
-tests/test_bot_telegram.py ....          [ 50%]
+test_relationships.py .                  [ 4%]
+tests/test_agent.py ....                 [ 23%]
+tests/test_bot_telegram.py ....          [ 42%]
+tests/test_narrative.py ...              [ 57%]
 tests/test_sql_validator.py .........    [100%]
 
 ==================== 18 passed in 0.33s ====================

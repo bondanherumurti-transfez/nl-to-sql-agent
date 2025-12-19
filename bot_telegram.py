@@ -159,7 +159,15 @@ class TelegramNLToSQLBot:
             
             # Format and send response
             if result['success']:
-                response = self.format_success_response(result)
+                # Generate natural language narrative
+                narrative = self.agent.generate_narrative(
+                    natural_query=natural_query,
+                    sql=result['sql'],
+                    results=result['results'][:20],
+                    column_names=result['column_names'],
+                    row_count=result['row_count']
+                )
+                response = self.format_success_response(result, narrative)
             else:
                 response = self.format_error_response(result)
             
@@ -176,7 +184,7 @@ class TelegramNLToSQLBot:
                 parse_mode=ParseMode.MARKDOWN
             )
     
-    def format_success_response(self, result: dict) -> str:
+    def format_success_response(self, result: dict, narrative: str = None) -> str:
         """Format successful query result for Telegram"""
         sql = result['sql']
         results = result['results']
@@ -185,6 +193,9 @@ class TelegramNLToSQLBot:
         attempt = result.get('attempt', 1)
         
         response = "✅ *Query Successful*\n\n"
+        
+        if narrative:
+            response += f"📊 **Summary:** {narrative}\n\n"
         
         if attempt > 1:
             response += f"_(Succeeded on attempt {attempt})_\n\n"
@@ -255,8 +266,9 @@ class TelegramNLToSQLBot:
         
         if truncated:
             table += f"\n... ({len(results) - max_rows} more rows)\n"
+            table += "⚠️ *Showing first 20 rows for token optimization*"
         
-        table += "```"
+        table += "\n```"
         
         return table
     
@@ -318,7 +330,15 @@ class TelegramNLToSQLBot:
                 
                 # Format and send response
                 if result['success']:
-                    response = self.format_success_response(result)
+                    # Generate natural language narrative
+                    narrative = self.agent.generate_narrative(
+                        natural_query=natural_query,
+                        sql=result['sql'],
+                        results=result['results'][:20],
+                        column_names=result['column_names'],
+                        row_count=result['row_count']
+                    )
+                    response = self.format_success_response(result, narrative)
                 else:
                     response = self.format_error_response(result)
                 
