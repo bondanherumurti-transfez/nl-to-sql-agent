@@ -207,12 +207,14 @@ def format_success_response(self, result: dict) -> str:
             - column_names: List of column names
             - row_count: Number of rows returned
             - attempt: Number of attempts taken
+            - natural_query: Original user question
     
     Returns:
         Formatted markdown string with:
         - Success indicator (✅)
+        - Natural language summary (📊 **Summary:** ...)
         - Generated SQL (code block)
-        - Results table
+        - Results table (limited to 20 rows)
         - Row count
     
     Features:
